@@ -1,1 +1,4 @@
+#Conjob to run the backup script everyday at 10PM
+#Replace the file location with yours
+0 22 * * * /usr/user/Documents/scripts/file_backup.sh >> /var/log/file_backup.log 2>&1
 
