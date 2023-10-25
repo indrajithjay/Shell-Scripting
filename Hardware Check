@@ -1,0 +1,41 @@
+#!/bin/bash 
+
+#Check hardwares and send mail to admin in case of failure
+#Add the script in cron to run periodically 
+#Ensure that your system has 'smartmontools' installed
+#Script needstest run to check if required ulitities and drivers are installed on the system
+
+# Defining email address
+#add more emails if required eg email_list=("email1" "email2" "email3")
+email_list =("admin@org.com")
+
+# Check CPU temperature
+cpu_temp=$(sensors | grep "Package id 0" | awk '{print $4}')
+
+# Check if CPU temperature is above 85
+if [[ $cpu_temp -gt 85 ]]; then
+    # Check for hardware failures using smartctl (for hard drives)
+    smartctl --all /dev/sda > sys_check.txt
+
+# Check available RAM
+available_ram=$(free -h | awk '/^Mem:/ {print $4}')
+
+# Check for hardware failures using smartctl (for hard drives)
+smartctl --all /dev/sda > sys_check.txt
+
+# Check if there are any errors in the report
+if grep -q "Error" sys_check.txt; then
+    # Send an email notification
+    echo "Hardware failure detected on $(hostname)" | mail -s "Hardware Failure Alert" $email_list < sys_check.txt
+    echo "Email sent to $email_list"
+else
+    echo "No hardware failures detected."
+fi
+
+# Clean up temporary file
+rm sys_check.txt
+
+# Send an email with the hardware information to each recipient
+for email in $email_list; do
+    echo -e "CPU Temperature: $cpu_temp\nAvailable RAM: $available_ram" | mail -s "Hardware Status Report" $email
+done
